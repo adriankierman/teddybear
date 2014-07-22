@@ -31,6 +31,7 @@ Handle<Value> Teddybear(const Arguments& args) {
   // (time_t) timer.tv_sec
   // (long) timer.tv_nsec.
   struct timespec timer;
+  struct timespec continueTimer;
 
   // Sets the second and nanosecond properties
   timer.tv_sec = sec;
@@ -43,12 +44,10 @@ Handle<Value> Teddybear(const Arguments& args) {
   // timespec struct, and will contain the remaing time
   // if nanosleep failed. But since we aren't interrested
   // in that information we will just use NULL.
-  if (nanosleep(&timer, NULL) < 0) {
-
-    // If nanosleep returned something else than 0
-    // an error ocured, and we will then throw.
-    Local<String> msg = String::New("teddybear failed");
-    return ThrowException(Exception::Error(msg));
+  while (nanosleep(&timer, &continueTimer) < 0) {
+    // continue
+    timer.tv_sec = continueTimer.tv_sec;
+    timer.tv_nsec = continueTimer.tv_nsec;
   }
 
   // Yay, there where no problems
